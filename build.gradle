@@ -2,12 +2,28 @@ plugins {
 	id 'org.springframework.boot' version '2.2.6.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
+	id 'com.palantir.docker' version '0.25.0'
+	id "com.palantir.docker-run" version "0.25.0"
+	id "eu.davidea.grabver" version "2.0.2"
 }
 
 group = 'com.contact.login'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '1.8'
 
+versioning {
+	// Required (number)
+	major 1
+	minor 0
+	// Optional, force custom patch (number)
+	patch 1
+//	// Optional (any string)
+//	preRelease "RC1"
+//	// Optional, custom task name to trigger the increase of the version
+//	incrementOn "<task-name>"
+//	// Optional, custom task name for which you want to save the versioning file
+//	saveOn "<task-name>"
+}
 configurations {
 	developmentOnly
 	runtimeClasspath {
@@ -38,6 +54,28 @@ dependencyManagement {
 	}
 }
 
+bootJar {
+	baseName('service-discovery')
+	version(versioning.major)
+}
+
 test {
 	useJUnitPlatform()
+}
+
+docker {
+	dependsOn build
+	name "contactlogin/service-discovery:${versioning.major}.${versioning.date}"
+	tag 'tag1', 'contactlogin/service-discovery:latest'
+	tag 'tag1', 'contactlogin/service-discovery:${versioning.major}.${versioning.date}'
+	files bootJar.archiveFile
+	buildArgs([JAR_FILE: "${bootJar.archiveFileName.get()}"])
+	noCache true
+}
+
+dockerRun {
+	name "${project.name}"
+	image "contactlogin/service-discovery:${versioning.major}.${versioning.date}"
+	ports '8761:8761'
+	clean true
 }

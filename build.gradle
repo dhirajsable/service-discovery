@@ -2,6 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.2.6.RELEASE'
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
+	id 'com.palantir.docker' version '0.25.0'
 }
 
 group = 'com.contact.login'
@@ -38,6 +39,19 @@ dependencyManagement {
 	}
 }
 
+bootJar {
+	baseName('service-discovery')
+	version('1.0')
+}
+
 test {
 	useJUnitPlatform()
+}
+
+docker {
+	dependsOn build
+	name "contactlogin/service-discovery:${project.version}"
+	files bootJar.archiveFile
+	buildArgs([JAR_FILE: "${bootJar.archiveFileName.get()}"])
+	noCache true
 }

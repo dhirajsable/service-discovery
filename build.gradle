@@ -3,6 +3,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.0.9.RELEASE'
 	id 'java'
 	id 'com.palantir.docker' version '0.25.0'
+	id "com.palantir.docker-run" version "0.25.0"
 }
 
 group = 'com.contact.login'
@@ -54,4 +55,11 @@ docker {
 	files bootJar.archiveFile
 	buildArgs([JAR_FILE: "${bootJar.archiveFileName.get()}"])
 	noCache true
+}
+
+dockerRun {
+	name "${project.name}"
+	image "contactlogin/${project.name}:${project.version}"
+	ports '8761:8761'
+	clean true
 }
